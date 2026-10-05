@@ -1,0 +1,87 @@
+name: Review and publish package
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing reviewed tag matching package.json (vX.Y.Z or prerelease)
+        required: true
+        type: string
+      publish:
+        description: Publish after CI and protected npm environment approval (false only prepares artifact)
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      commit: ${{ steps.tag.outputs.commit }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: tag
+        name: Resolve tag to an immutable commit
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          node --input-type=module <<'JS'
+          import { execFileSync } from 'node:child_process';
+          import { appendFileSync } from 'node:fs';
+          const tag = process.env.RELEASE_TAG;
+          if (!/^v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(tag)) throw new Error('Invalid release tag');
+          const commit = execFileSync('git', ['rev-parse', `refs/tags/${tag}^{commit}`], {encoding:'utf8'}).trim();
+          if (process.env.GITHUB_REF !== `refs/tags/${tag}` || process.env.GITHUB_SHA !== commit) throw new Error('Dispatch this workflow from the release tag itself so npm provenance matches the tested source');
+          const pkg = JSON.parse(execFileSync('git', ['show', `${commit}:package.json`], {encoding:'utf8'}));
+          if (`v${pkg.version}` !== tag) throw new Error('Tag must match package version');
+          const expected = `https://github.com/${process.env.GITHUB_REPOSITORY}`;
+          if (pkg.repository?.url?.replace(/^git\+/, '').replace(/\.git$/, '') !== expected) throw new Error('Configure the actual authorized public repository before release');
+          appendFileSync(process.env.GITHUB_OUTPUT, `commit=${commit}\n`);
+          JS
+  verify:
+    needs: validate
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.validate.outputs.commit }}
+  package:
+    needs: [validate, verify]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ needs.validate.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check:package
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: reviewed-npm-package
+          path: .local/*.tgz
+          include-hidden-files: true
+          if-no-files-found: error
+  publish:
+    needs: [validate, package]
+    if: inputs.publish && vars.NPM_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: reviewed-npm-package
+          path: package
+      - name: Publish the exact verified tarball using npm trusted publishing
+        run: npm publish package/*.tgz --provenance --access public
