@@ -105,6 +105,6 @@ npm run test:integration  # Requires EMBEDDED_POSTGRES_CLI; fails if missing
 npm run test:examples     # Runs all three runners and both hook/scoped examples
 ```
 
-Integration tests run SQL and verify port/workspace cleanup after teardown, startup failure, abort and Node parent death, plus persistent restarts. [Contributing](CONTRIBUTING.md) explains the pinned upstream development build and CI. [Release preparation](docs/releasing.md) describes the review gate; nothing is published automatically on push.
+Integration tests run SQL and verify port/workspace cleanup after teardown, startup failure, abort and Node parent death, plus persistent restarts. [Local validation results](docs/validation.md) distinguish completed checks from pending remote CI. [Contributing](CONTRIBUTING.md) explains the pinned upstream development build and CI. [Release preparation](docs/releasing.md) describes the review gate; nothing is published automatically on push.
 
 MIT licensed. PostgreSQL distributions retain their own licenses.
