@@ -6,7 +6,7 @@
   "author": "Fergus Strange",
   "type": "module",
   "engines": {
-    "node": "^22.0.0 || >=24.0.0"
+    "node": "^22.0.0 || ^24.0.0"
   },
   "main": "./dist/cjs/index.js",
   "types": "./dist/esm/index.d.ts",
@@ -47,7 +47,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "npm run build && node --test test/*.test.mjs",
-    "test:coverage": "npm run build && c8 --all --include 'dist/esm/**/*.js' --exclude 'dist/esm/index.js' --reporter=text --reporter=json-summary --reporter=lcov --check-coverage --lines 90 --functions 90 --branches 90 --statements 90 node --test test/*.test.mjs",
+    "test:coverage": "npm run build && c8 --all --include 'dist/esm/**/*.js' --exclude 'dist/esm/index.js' --reporter=text --reporter=json-summary --reporter=lcov --check-coverage --per-file --lines 90 --functions 90 --branches 90 --statements 90 node --test test/*.test.mjs",
     "test:integration": "npm run build && node --test test/integration/*.test.mjs",
     "test:examples": "node scripts/test-examples.mjs",
     "check:package": "node scripts/check-package.mjs",

@@ -2,7 +2,7 @@
 
 Use Node 22 or 24 and `npm ci`. Runtime code imports only `node:*` modules and relative package modules. Do not add a runtime driver or test framework dependency to the core.
 
-`npm run check` builds ESM/CommonJS, runs protocol/failure/download tests, enforces at least 90% statement/line/function/branch coverage across production implementation files, packs a tarball, installs it into an isolated temporary project, and checks both module systems and TypeScript declarations. Re-export-only `index.ts` has no logic and is excluded from instrumentation. No production branches are hidden with coverage-ignore annotations.
+`npm run check` builds ESM/CommonJS, runs protocol/failure/download tests, enforces at least 90% statement/line/function/branch coverage in every production implementation file, packs a tarball, installs it into an isolated temporary project, and checks both module systems and TypeScript declarations. Re-export-only `index.ts` has no logic and is excluded from instrumentation. No production branches are hidden with coverage-ignore annotations.
 
 `npm run test:integration` is a required second gate. It refuses to silently skip when `EMBEDDED_POSTGRES_CLI` is missing. Build the sibling CLI with `node scripts/prepare-integration.mjs ../embedded-postgres`, then export the executable path printed by that command. Optional `EP_TEST_BINARIES` points to an existing PostgreSQL distribution to avoid downloads; `EP_TEST_VERSION` selects the distribution version. They are test harness variables, not ambient CLI configuration.
 

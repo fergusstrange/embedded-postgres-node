@@ -9,7 +9,7 @@ process.stdin.resume();
 process.stdin.on('end', () => {
   if (mode === 'hang' || mode === 'stopped-hang') return;
   if (mode === 'shutdown-error') { event({ event: 'error', error: 'shutdown failed' }); process.exitCode = 1; return; }
-  if (mode === 'no-stopped') { process.exit(0); }
+  if (mode === 'no-stopped' || mode === 'stdout-end') { process.exit(0); }
   if (mode === 'slow-stop') {
     setTimeout(() => { event({ event: 'stopped' }); process.exit(0); }, 180);
     return;
@@ -36,10 +36,20 @@ else if (mode === 'split') {
   event(ready);
   if (mode === 'duplicate') event(ready);
   if (mode === 'duplicate-stop') { event({ event: 'stopped' }); event({ event: 'stopped' }); }
+  if (mode === 'stdout-end') process.stdout.end();
   if (mode === 'ready-exit') setTimeout(() => process.exit(9), 40);
   if (mode === 'runtime-error') setTimeout(() => { event({ event: 'error', error: `runtime failure ${url}` }); }, 40);
   if (mode === 'stopped-hang') event({ event: 'stopped' });
-  if (mode === 'flood') process.stderr.write('noise\n'.repeat(20_000) + `password=${password}\n${url}\n`);
+  if (mode === 'flood') {
+    process.stderr.write('noise\n'.repeat(20_000) + `password=${password}\n${url}\n`);
+    setTimeout(() => event({ event: 'error', error: 'diagnostic fixture failure' }), 50);
+  }
+  if (mode === 'long-stderr') {
+    process.stderr.write('x'.repeat(100_000));
+    setTimeout(() => process.stderr.write('x'.repeat(100)), 20);
+    setTimeout(() => process.stderr.write(`\nknown=${password}\n`), 40);
+    setTimeout(() => event({ event: 'error', error: 'long diagnostic fixture failure' }), 60);
+  }
 }
 if (mode === 'hang' || mode === 'stopped-hang') setInterval(() => {}, 1000);
 // Keep Node from attempting to load "run" as a script after the preload.

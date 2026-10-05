@@ -132,6 +132,8 @@ export async function startPostgres(options: PostgresOptions = {}): Promise<Post
     child.stdout.on('end', () => {
       if (brokenProtocol) return;
       try { parser.finish(); } catch (error) { brokenProtocol = true; fail(error as PostgresError); }
+      // Protocol EOF while the owner lives must also release our lifetime pipe.
+      if (!stopped) requestStop();
     });
     child.stderr.on('data', (chunk: string) => {
       if (discardStderrLine) {

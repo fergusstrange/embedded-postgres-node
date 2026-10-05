@@ -46,10 +46,10 @@ for (const [mode, code] of [['invalid-json','PROTOCOL'],['protocol','PROTOCOL'],
     });
   });
 }
-for (const [mode, code] of [['no-stopped','EXIT'], ['nonzero-stop','EXIT'], ['duplicate','PROTOCOL'], ['runtime-error','EXIT'], ['ready-exit','EXIT'], ['shutdown-error','EXIT'], ['duplicate-stop','EXIT']]) {
+for (const [mode, code] of [['no-stopped','EXIT'], ['nonzero-stop','EXIT'], ['duplicate','PROTOCOL'], ['runtime-error','EXIT'], ['ready-exit','EXIT'], ['shutdown-error','EXIT'], ['duplicate-stop','EXIT'], ['stdout-end','EXIT']]) {
   test(`post-ready failure ${mode} is available through closed and stop`, async () => {
     const pg = await startPostgres(fakeOptions(mode));
-    if (['runtime-error','ready-exit','duplicate','duplicate-stop'].includes(mode)) await pg.closed;
+    if (['runtime-error','ready-exit','duplicate','duplicate-stop','stdout-end'].includes(mode)) await pg.closed;
     await assert.rejects(pg.stop(), { code });
     assert.equal((await pg.closed).error.code, code);
   });
@@ -89,12 +89,14 @@ test('final protocol line without newline', async () => {
   const pg = await startPostgres(fakeOptions('final-line'));
   await pg.stop();
 });
-test('bounded stderr diagnostics are redacted', async () => {
-  const pg = await startPostgres(fakeOptions('flood', { password: 'secret-secret' }));
-  // The fixture floods stderr immediately after ready, then keeps serving.
-  await new Promise(r => setTimeout(r, 80));
-  await pg.stop();
-  assert.equal((await pg.closed).error, undefined);
+for (const mode of ['flood', 'long-stderr']) test(`bounded stderr diagnostics (${mode}) are redacted`, async () => {
+  const pg = await startPostgres(fakeOptions(mode, { password: 'secret-secret' }));
+  const result = await pg.closed;
+  assert.equal(result.error.code, 'EXIT');
+  assert.ok(result.error.stderr.length <= 65536);
+  assert.doesNotMatch(result.error.stderr, /secret-secret|postgresql:\/\//);
+  assert.match(result.error.stderr, /redacted/);
+  await assert.rejects(pg.stop(), { code: 'EXIT' });
 });
 test('scoped helper returns result and preserves callback or combined failure', async () => {
   assert.equal(await withPostgres(fakeOptions(), async pg => pg.port), 54321);
