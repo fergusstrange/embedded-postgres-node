@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "ESNext.Disposable"], "types": ["node"],
+    "rootDir": "src", "outDir": "dist/esm", "strict": true,
+    "declaration": true, "declarationMap": false, "sourceMap": true,
+    "inlineSources": true, "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true, "noUnusedLocals": true,
+    "noUnusedParameters": true, "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true, "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"]
+}
