@@ -2,9 +2,15 @@
 
 Real PostgreSQL for Node.js tests, supervised by the [embedded-postgres v2 CLI](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0-alpha.1). TypeScript types, ESM and CommonJS, dynamic ports, explicit async cleanup, and **zero runtime npm dependencies**. Use your own PostgreSQL driver, test runner and migration framework.
 
-**Development preview:** `embedded-postgres-node` is registered on npm under `fergusstrange`. npm currently serves only its generated `0.0.0-stage` placeholder; the library has not been released. A setup draft remains staged. This source package pins CLI `v2.0.0-alpha.1` with verified SHA-256 checksums for all six platforms. Try a local tarball until the first npm library release.
+**Alpha:** `0.1.0-alpha.1` pins CLI `v2.0.0-alpha.1` with verified SHA-256 checksums for all six platforms. The API may change before a stable release. Prereleases use npm's `next` tag.
 
-## Try it locally
+## Install
+
+```sh
+npm install --save-dev --save-exact embedded-postgres-node@0.1.0-alpha.1
+```
+
+To run the examples from this repository:
 
 ```sh
 # In this repository; use Node 22 or 24.
@@ -15,7 +21,7 @@ node --test examples/node-test.mjs
 
 The first startup downloads and verifies the pinned CLI, then acquires PostgreSQL through the CLI's own verified manifest. Later starts reuse verified caches. Consumers do not need Go. PostgreSQL's native runtime-library requirements still apply. No package install script downloads or executes binaries.
 
-To try the package in another project, run `npm pack` here, then `npm install --save-dev /path/to/embedded-postgres-node-0.1.0-alpha.1.tgz` there. `startPostgres()` works without CLI configuration. An explicit `cli: { path }` or `EMBEDDED_POSTGRES_CLI` overrides the default release.
+`startPostgres()` works without CLI configuration. An explicit `cli: { path }` or `EMBEDDED_POSTGRES_CLI` overrides the default release. To test unpublished source changes in another project, run `npm pack` here and install the resulting tarball there.
 
 ## A database for a test
 
@@ -103,6 +109,6 @@ npm run test:integration  # Requires EMBEDDED_POSTGRES_CLI; fails if missing
 npm run test:examples     # Runs all three runners and both hook/scoped examples
 ```
 
-Integration tests run SQL and verify port/workspace cleanup after teardown, startup failure, abort and Node parent death, plus persistent restarts. [Local validation results](docs/validation.md) distinguish completed checks from pending remote CI. [Contributing](CONTRIBUTING.md) explains the pinned upstream development build and CI. [Release preparation](docs/releasing.md) describes the review gate; nothing is published automatically on push.
+Integration tests run SQL and verify port/workspace cleanup after teardown, startup failure, abort and Node parent death, plus persistent restarts. The [validation record](docs/validation.md) includes local and native CI results. [Contributing](CONTRIBUTING.md) explains the pinned upstream development build and CI. [Release preparation](docs/releasing.md) describes the review gate; nothing is published automatically on push.
 
 MIT licensed. PostgreSQL distributions retain their own licenses.

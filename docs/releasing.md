@@ -1,8 +1,8 @@
 # Release preparation
 
-The public source repository is [fergusstrange/embedded-postgres-node](https://github.com/fergusstrange/embedded-postgres-node). The npm package is registered under `fergusstrange` as of 2026-10-06. npm has published its generated `0.0.0-stage` placeholder; the library code remains unpublished on npm. Releasing the library requires the owner's explicit authorization; pushes run CI without publishing.
+The public source repository is [fergusstrange/embedded-postgres-node](https://github.com/fergusstrange/embedded-postgres-node), and the npm package is owned by `fergusstrange`. The first library release is `0.1.0-alpha.1` under the `next` dist-tag. Releasing requires the owner's explicit authorization; pushes run CI without publishing. The registration history below records the earlier setup-only placeholder and draft.
 
-## Before the first release
+## Before a release
 
 1. npm ownership is established: `embedded-postgres-node` is owned by `fergusstrange`. Enable account 2FA before approving staged releases or configuring protected publishing. Verify the account with `npm whoami`; do not commit npm credentials.
 2. The owner authorized creation of the public source repository, and package.json now includes its actual `repository`, `homepage` and `bugs` URLs. Keep npm provenance tied to this repository.

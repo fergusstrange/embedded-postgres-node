@@ -1,4 +1,4 @@
-# Validation record — 2026-10-05 to 2026-10-06
+# Validation record — 2026-10-05 to 2026-10-07
 
 The dated sections below are historical snapshots. Later sections record subsequent validation and repository setup; earlier release, npm and repository blockers have since changed.
 
@@ -86,3 +86,9 @@ The [first native run](https://github.com/fergusstrange/embedded-postgres-node/a
 The default branch and CI push trigger use `master`, as requested by the owner.
 
 Subsequent Windows runs passed all 90 unit tests and the installed-package fresh-download/offline checks. Source-integration archive extraction now uses relative paths because Git Bash's GNU tar interprets drive-letter archive paths as remote hosts. Real integration then exposed a runtime issue in both parent-death cases: Node's Windows job object kills ordinary child processes immediately when Node exits, preventing CLI cleanup. The wrapper now launches the Windows CLI with `detached: true` while retaining its process reference and ownership pipes. This lets the CLI observe stdin EOF and finish cleanup after normal or forced Node termination. The existing real parent-death tests cover both port closure and disposable-workspace removal; no assertions are skipped or relaxed.
+
+## Completed native matrix and release preparation — 2026-10-07
+
+Commit `640966c3fdbe218a087edc7886ae2255310a10f1` passed [all twelve native CI jobs](https://github.com/fergusstrange/embedded-postgres-node/actions/runs/37450528359): Node 22 and 24 on Linux, macOS and Windows, each on x64 and ARM64. Every job passed 90 unit/failure tests, per-file coverage thresholds, installed-tarball ESM/CommonJS and declaration checks, fresh published CLI/PostgreSQL downloads and offline reuse, all eight real lifecycle tests, and the runner/migration examples. Both Windows parent-death cases passed with port and workspace cleanup verified.
+
+The owner authorized the first npm alpha release. The release preparation updates installation documentation; runtime code and dependency versions remain those validated above. The tag-based release workflow repeats the native matrix and package checks before publication, which requires approval in the protected `npm` environment.
