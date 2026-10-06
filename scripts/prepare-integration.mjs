@@ -20,7 +20,8 @@ if (process.env.CI) {
   const binaries = resolve('.local/pg');
   execFileSync(process.platform === 'win32' ? 'python' : 'python3', [join(source, 'scripts/fetch-postgres.py'), pin.postgresVersion, target, archive], { cwd: source, stdio: 'inherit' });
   mkdirSync(binaries, { recursive: true });
-  execFileSync('tar', ['-xzf', archive, '-C', binaries, '--strip-components=1'], { stdio: 'inherit' });
+  // Git Bash's GNU tar treats a drive-letter archive path as a remote host.
+  execFileSync('tar', ['-xzf', 'postgres.tar.gz', '-C', 'pg', '--strip-components=1'], { cwd: resolve('.local'), stdio: 'inherit' });
   values.EP_TEST_BINARIES = binaries;
 }
 writeFileSync('.local/integration-env.json', JSON.stringify(values, null, 2) + '\n');
