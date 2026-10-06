@@ -47,8 +47,9 @@ for (const [mode, code] of [['invalid-json','PROTOCOL'],['protocol','PROTOCOL'],
   });
 }
 for (const [mode, code] of [['no-stopped','EXIT'], ['nonzero-stop','EXIT'], ['duplicate','PROTOCOL'], ['runtime-error','EXIT'], ['ready-exit','EXIT'], ['shutdown-error','EXIT'], ['duplicate-stop','EXIT'], ['stdout-end','EXIT']]) {
-  test(`post-ready failure ${mode} is available through closed and stop`, async () => {
+  test(`post-ready failure ${mode} is available through closed and stop`, { timeout: 10_000 }, async t => {
     const pg = await startPostgres(fakeOptions(mode));
+    t.after(() => pg.stop().catch(() => {}));
     if (['runtime-error','ready-exit','duplicate','duplicate-stop','stdout-end'].includes(mode)) await pg.closed;
     await assert.rejects(pg.stop(), { code });
     assert.equal((await pg.closed).error.code, code);
