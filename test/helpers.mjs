@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'node:url';
-export const fixture = fileURLToPath(new URL('./fixtures/cli.mjs', import.meta.url));
+// --import expects a module URL; Windows drive-letter paths are URL schemes.
+export const fixture = new URL('./fixtures/cli.mjs', import.meta.url).href;
 export const fakeOptions = (mode = 'normal', extra = {}) => ({
   cli: { path: process.execPath },
   stopTimeoutMs: 1,

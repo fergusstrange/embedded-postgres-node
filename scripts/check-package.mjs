@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync, mkdirSync, copyFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import { pathToFileURL } from 'node:url';
 const npm = (...args) => execFileSync(process.execPath, [process.env.npm_execpath, ...args], { encoding: 'utf8' });
 execFileSync(process.execPath, ['scripts/build.mjs'], { stdio: 'inherit' });
 mkdirSync('.local', { recursive: true });
@@ -30,7 +31,7 @@ try {
       const esm = await import('embedded-postgres-node');
       assert.equal(typeof esm.resolveCli, 'function');
       for (const entry of [pkg, esm]) {
-        const database = await entry.startPostgres(${JSON.stringify({ cli: { path: process.execPath }, env: { NODE_OPTIONS: `--import ${JSON.stringify(resolve('test/fixtures/cli.mjs'))}` } })});
+        const database = await entry.startPostgres(${JSON.stringify({ cli: { path: process.execPath }, env: { NODE_OPTIONS: `--import ${JSON.stringify(pathToFileURL(resolve('test/fixtures/cli.mjs')).href)}` } })});
         await database.stop();
         assert.equal((await database.closed).stopped, true);
       }
