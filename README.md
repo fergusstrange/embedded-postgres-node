@@ -1,24 +1,21 @@
 # embedded-postgres-node
 
-Real PostgreSQL for Node.js tests, supervised by the [embedded-postgres v2 CLI](https://github.com/fergusstrange/embedded-postgres/pull/171). TypeScript types, ESM and CommonJS, dynamic ports, explicit async cleanup, and **zero runtime npm dependencies**. Use your own PostgreSQL driver, test runner and migration framework.
+Real PostgreSQL for Node.js tests, supervised by the [embedded-postgres v2 CLI](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0-alpha.1). TypeScript types, ESM and CommonJS, dynamic ports, explicit async cleanup, and **zero runtime npm dependencies**. Use your own PostgreSQL driver, test runner and migration framework.
 
-**Development preview:** `embedded-postgres-node` is registered on npm under `fergusstrange`. npm currently serves only its generated `0.0.0-stage` placeholder; the library has not been released. A setup draft remains staged. No v2 CLI release is currently pinned by this package. Use a local CLI built from the sibling Go project until the first reviewed release.
+**Development preview:** `embedded-postgres-node` is registered on npm under `fergusstrange`. npm currently serves only its generated `0.0.0-stage` placeholder; the library has not been released. A setup draft remains staged. This source package pins CLI `v2.0.0-alpha.1` with verified SHA-256 checksums for all six platforms. Try a local tarball until the first npm library release.
 
 ## Try it locally
 
 ```sh
-# In this repository; Node 22 or 24 and Go 1.26+ are development prerequisites.
+# In this repository; use Node 22 or 24.
 npm ci
 npm run build
-node scripts/prepare-integration.mjs ../embedded-postgres
-export EMBEDDED_POSTGRES_CLI="$PWD/.local/embedded-postgres" # Windows: .exe
 node --test examples/node-test.mjs
 ```
 
-PowerShell: `$env:EMBEDDED_POSTGRES_CLI = "$PWD\.local\embedded-postgres.exe"`.
-Consumers of a published CLI will not need Go. PostgreSQL binaries are acquired by the CLI, with its native runtime-library requirements. No package install script downloads or executes binaries.
+The first startup downloads and verifies the pinned CLI, then acquires PostgreSQL through the CLI's own verified manifest. Later starts reuse verified caches. Consumers do not need Go. PostgreSQL's native runtime-library requirements still apply. No package install script downloads or executes binaries.
 
-To try the package in another project, run `npm pack` here, then `npm install --save-dev /path/to/embedded-postgres-node-0.1.0-alpha.1.tgz` there. Pass an explicit `cli: { path }`, or set `EMBEDDED_POSTGRES_CLI`.
+To try the package in another project, run `npm pack` here, then `npm install --save-dev /path/to/embedded-postgres-node-0.1.0-alpha.1.tgz` there. `startPostgres()` works without CLI configuration. An explicit `cli: { path }` or `EMBEDDED_POSTGRES_CLI` overrides the default release.
 
 ## A database for a test
 
@@ -26,7 +23,7 @@ To try the package in another project, run `npm pack` here, then `npm install --
 import { withPostgres } from 'embedded-postgres-node';
 import pg from 'pg'; // Install your own driver as a development dependency.
 
-await withPostgres({ cli: { path: '/absolute/path/to/embedded-postgres' } }, async database => {
+await withPostgres({}, async database => {
   const pool = new pg.Pool({ connectionString: database.connectionUrl });
   try {
     await pool.query('CREATE TABLE widgets (id integer PRIMARY KEY)');
@@ -54,7 +51,7 @@ Runnable examples:
 ```js
 import { startPostgres } from 'embedded-postgres-node';
 
-const database = await startPostgres({ /* cli omitted when EMBEDDED_POSTGRES_CLI is set */ });
+const database = await startPostgres();
 try {
   // database.connectionUrl is a credential. Do not log or snapshot it.
   // database.port is available after an authenticated readiness check.
@@ -69,7 +66,7 @@ An optional `signal` controls the entire database lifetime. Cancellation request
 
 ```ts
 const database = await startPostgres({
-  cli: { path: '/absolute/path/to/embedded-postgres' },
+  cli: { cacheDir: '/path/to/shared-cli-cache' }, // Optional; uses the pinned CLI.
   postgresVersion: '18.6.0',
   database: 'application_test',
   port: 0,
@@ -91,16 +88,17 @@ See the [full API](docs/api.md), [binary acquisition](docs/binaries.md), and [in
 
 The wrapper spawns `run --json --parent-stdin`, keeps stdin open until teardown, parses protocol 1 incrementally, and waits for **both `stopped` and process exit**. Shutdown uses its own deadline, even after cancellation. The default outer shutdown deadline is `stopTimeoutMs + 5 seconds`; an override must exceed `stopTimeoutMs + 2 seconds`. If it expires, the wrapper terminates only its retained CLI child and reports that PostgreSQL cleanup cannot be confirmed. It waits up to two further seconds for process/pipe closure.
 
-A Node crash or forced Node termination closes the ownership pipe; the CLI and its independent supervisor perform cleanup. Whole-machine failure, simultaneous termination of the supervisor and PostgreSQL, or an unresponsive supervisor cannot be promised graceful cleanup. See [upstream lifecycle limits](https://github.com/fergusstrange/embedded-postgres/blob/codex/embedded-postgres-v2/docs/cli.md). Normal application shutdown should await `stop()`; no import installs process signal handlers. If your application owns signals, install handlers there.
+A Node crash or forced Node termination closes the ownership pipe; the CLI and its independent supervisor perform cleanup. Whole-machine failure, simultaneous termination of the supervisor and PostgreSQL, or an unresponsive supervisor cannot be promised graceful cleanup. See [upstream lifecycle limits](https://github.com/fergusstrange/embedded-postgres/blob/v2.0.0-alpha.1/docs/cli.md). Normal application shutdown should await `stop()`; no import installs process signal handlers. If your application owns signals, install handlers there.
 
 Errors expose a stable `code`, a descriptive `message`, and a bounded `stderr` tail. Known passwords and PostgreSQL URLs are redacted; raw protocol, argv, abort reasons and child error causes are not included. Arbitrary custom programs can emit other secrets, so review diagnostics before sharing them. The instance's normal JSON serialization and inspection omit the connection URL; reading the property still returns the real credential.
 
 ## Support and development
 
-Node 22 and 24 are the supported LTS lines as of 2026-10-05 ([official schedule](https://github.com/nodejs/Release#release-schedule)); Node 20 is EOL, and Node 26 is not yet LTS. CI is configured for both LTS versions on Linux, macOS and Windows, each on x64 and ARM64. Windows ARM64 uses a native CLI and x64 PostgreSQL under emulation. Linux PostgreSQL runtime libraries are still required; Alpine/musl needs a compatible distribution. See [upstream non-root and native requirements](https://github.com/fergusstrange/embedded-postgres/blob/codex/embedded-postgres-v2/docs/non-root.md).
+Node 22 and 24 are the supported LTS lines as of 2026-10-05 ([official schedule](https://github.com/nodejs/Release#release-schedule)); Node 20 is EOL, and Node 26 is not yet LTS. CI is configured for both LTS versions on Linux, macOS and Windows, each on x64 and ARM64. Windows ARM64 uses a native CLI and x64 PostgreSQL under emulation. Linux PostgreSQL runtime libraries are still required; Alpine/musl needs a compatible distribution. See [upstream non-root and native requirements](https://github.com/fergusstrange/embedded-postgres/blob/v2.0.0-alpha.1/docs/non-root.md).
 
 ```sh
 npm run check             # Coverage >=90% and installed-tarball smoke/type checks
+npm run check:release     # Fresh verified downloads, real SQL, offline reuse from installed tarball
 npm run test:integration  # Requires EMBEDDED_POSTGRES_CLI; fails if missing
 npm run test:examples     # Runs all three runners and both hook/scoped examples
 ```

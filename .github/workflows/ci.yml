@@ -52,7 +52,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libssl3 libreadline8 libxml2 libgssapi-krb5-2 zlib1g liblz4-1 libzstd1
       - run: npm ci
       - run: npm run test:coverage
-      - run: npm run check:package
+      - name: Test installed package with published CLI and fresh PostgreSQL downloads
+        run: npm run check:release
       - run: node scripts/prepare-integration.mjs .local/upstream
       - run: npm run test:integration
       - run: npm run test:examples

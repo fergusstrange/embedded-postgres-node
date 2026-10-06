@@ -4,7 +4,7 @@ Choose one database per test for isolation, or one per suite when startup cost m
 
 ## Suite lifecycle
 
-The checked-in examples run real SQL in `node:test`, Vitest and Jest. Each uses its runner's suite-level setup/teardown, an explicit startup allowance of 180 seconds, and pool-before-server cleanup. They can be copied into your project after installing your chosen driver. `npm run test:examples` runs all examples locally after you set `EMBEDDED_POSTGRES_CLI`.
+The checked-in examples run real SQL in `node:test`, Vitest and Jest. Each uses its runner's suite-level setup/teardown, an explicit startup allowance of 180 seconds, and pool-before-server cleanup. They can be copied into your project after installing your chosen driver. `npm run test:examples` runs all examples locally with the default pinned release, or an optional `EMBEDDED_POSTGRES_CLI` override.
 
 Runner hook timeouts must exceed wrapper startup plus shutdown allowances. On a cold or slow network, prefetch CLI/PostgreSQL distributions ahead of the suite or increase both the wrapper and runner timeouts. Tests should not depend on downloads fitting into a runner's common 5-second default.
 
@@ -30,7 +30,7 @@ For pgvector, PostGIS, AGE or TimescaleDB, supply a compatible custom distributi
 
 ## RunAs and containers
 
-A normal non-root caller uses its own identity. A root caller must explicitly supply both a nonzero Unix UID and nonzero GID via `runAs`; an omitted group is never inferred. A non-root caller may retain its own GID 0; an unprivileged caller cannot choose another identity. Caller-owned workspace/socket parents and persistent paths must be accessible to that account. Windows does not support Unix UID/GID selection. Consult the upstream [non-root guide](https://github.com/fergusstrange/embedded-postgres/blob/codex/embedded-postgres-v2/docs/non-root.md) for native runtime libraries and ownership behavior.
+A normal non-root caller uses its own identity. A root caller must explicitly supply both a nonzero Unix UID and nonzero GID via `runAs`; an omitted group is never inferred. A non-root caller may retain its own GID 0; an unprivileged caller cannot choose another identity. Caller-owned workspace/socket parents and persistent paths must be accessible to that account. Windows does not support Unix UID/GID selection. Consult the upstream [non-root guide](https://github.com/fergusstrange/embedded-postgres/blob/v2.0.0-alpha.1/docs/non-root.md) for native runtime libraries and ownership behavior.
 
 ## Signals and errors
 

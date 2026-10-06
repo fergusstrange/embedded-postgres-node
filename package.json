@@ -52,6 +52,7 @@
     "test:integration": "npm run build && node --test test/integration/*.test.mjs",
     "test:examples": "node scripts/test-examples.mjs",
     "check:package": "node scripts/check-package.mjs",
+    "check:release": "node scripts/check-package.mjs --real",
     "prepack": "npm run build",
     "check": "npm run test:coverage && npm run check:package"
   },

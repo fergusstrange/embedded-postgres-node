@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync, rmSync, mkdirSync, copyFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 const npm = (...args) => execFileSync(process.execPath, [process.env.npm_execpath, ...args], { encoding: 'utf8' });
@@ -38,8 +38,9 @@ try {
   `;
   execFileSync(process.execPath, ['-e', smoke], { cwd: temporary, stdio: 'inherit' });
   const consumer = `
-    import { startPostgres, withPostgres, type PostgresInstance, type PostgresOptions } from 'embedded-postgres-node';
-    const options: PostgresOptions = { cli: { path: 'local-cli' }, storage: { type: 'disposable' }, parameters: { max_connections: '10' } };
+    import { startPostgres, withPostgres, resolveCli, DEFAULT_CLI_RELEASE, type PostgresInstance, type PostgresOptions, type CliRelease } from 'embedded-postgres-node';
+    const release: Readonly<CliRelease> = DEFAULT_CLI_RELEASE;
+    const options: PostgresOptions = { cli: { cacheDir: './cli-cache', offline: true }, storage: { type: 'disposable' }, parameters: { max_connections: '10' } };
     async function use(): Promise<number> {
       const db: PostgresInstance = await startPostgres(options);
       await db[Symbol.asyncDispose]();
@@ -49,9 +50,18 @@ try {
     startPostgres({ port: '5432' });
     // @ts-expect-error persistent storage needs an explicit data directory
     startPostgres({ storage: { type: 'persistent' } });
+    // @ts-expect-error default release metadata is readonly
+    DEFAULT_CLI_RELEASE.version = 'v2.0.0';
+    // @ts-expect-error default checksums are readonly
+    DEFAULT_CLI_RELEASE.checksums['linux-amd64'] = 'untrusted';
+    void resolveCli({ release });
     void use;
   `;
   for (const extension of ['mts', 'cts']) writeFileSync(join(temporary, `consumer.${extension}`), consumer);
   execFileSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'), '--noEmit', '--strict', '--skipLibCheck', '--module', 'NodeNext', '--target', 'ES2022', '--lib', 'ES2022,ESNext.Disposable', '--typeRoots', resolve('node_modules/@types'), '--types', 'node', join(temporary, 'consumer.mts'), join(temporary, 'consumer.cts')], { cwd: temporary, stdio: 'inherit' });
   console.log(`Verified ${tarball.filename}: ${files.length} files, ESM/CommonJS lifecycle and TypeScript consumers, zero runtime dependencies.`);
+  if (process.argv.includes('--real')) {
+    copyFileSync('test/fixtures/released-consumer.mjs', join(temporary, 'released-consumer.mjs'));
+    execFileSync(process.execPath, ['released-consumer.mjs', resolve('node_modules/pg')], { cwd: temporary, stdio: 'inherit', timeout: 600_000 });
+  }
 } finally { rmSync(temporary, { recursive: true, force: true }); }

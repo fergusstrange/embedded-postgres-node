@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, readdir, readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { cliPlatform, resolveCli } from '../dist/esm/index.js';
+import { cliPlatform, resolveCli, DEFAULT_CLI_RELEASE } from '../dist/esm/index.js';
 import { cliAsset } from '../dist/esm/binary.js';
 
 const payload = Buffer.from('verified binary fixture');
@@ -33,20 +33,39 @@ test('all six platform/asset mappings', () => {
   assert.throws(() => cliPlatform('freebsd', 'x64'), { code: 'BINARY' });
   assert.throws(() => cliPlatform('linux', 'ia32'), { code: 'BINARY' });
 });
-test('local paths, missing config, env fallback and abort', async () => {
+test('local paths, explicit source precedence, env fallback and abort', async () => {
   const previous = process.env.EMBEDDED_POSTGRES_CLI;
   delete process.env.EMBEDDED_POSTGRES_CLI;
   try {
-    await assert.rejects(resolveCli(), { code: 'CONFIG' });
     for (const path of ['', 'bad\0']) await assert.rejects(resolveCli({ path }), { code: 'CONFIG' });
     await assert.rejects(resolveCli({ path: '/no/such/cli' }), { code: 'BINARY' });
     process.env.EMBEDDED_POSTGRES_CLI = process.execPath;
     assert.equal(await resolveCli(), process.execPath);
+    process.env.EMBEDDED_POSTGRES_CLI = '/no/such/env-cli';
+    assert.equal(await resolveCli({ path: process.execPath }), process.execPath);
+    await assert.rejects(resolveCli(), { code: 'BINARY' });
     await assert.rejects(resolveCli(undefined, AbortSignal.abort()), { code: 'ABORTED' });
   } finally {
     if (previous === undefined) delete process.env.EMBEDDED_POSTGRES_CLI;
     else process.env.EMBEDDED_POSTGRES_CLI = previous;
   }
+});
+test('default release rejects untrusted bytes and supports offline cache selection', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'ep-node-default-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const requests = [];
+  t.mock.method(globalThis, 'fetch', async url => {
+    requests.push(String(url));
+    return new Response(payload);
+  });
+  await assert.rejects(resolveCli({ cacheDir: root, offline: true }), /offline cache/);
+  assert.equal(requests.length, 0);
+  await assert.rejects(resolveCli({ cacheDir: root }), /checksum mismatch/);
+  assert.deepEqual(requests, [`https://github.com/fergusstrange/embedded-postgres/releases/download/v2.0.0-alpha.1/${cliAsset(target)}`]);
+  assert.ok(!(await readdir(root, { recursive: true })).some(x => x.endsWith('.tmp') || x.endsWith(cliAsset(target))));
+  // Exported metadata must not allow another importer to change the trusted default.
+  assert.throws(() => { DEFAULT_CLI_RELEASE.version = 'v2.99.0'; }, TypeError);
+  assert.throws(() => { DEFAULT_CLI_RELEASE.checksums[target] = sha; }, TypeError);
 });
 test('download, checksum, offline reuse, corruption recovery and no temporary files', async t => {
   const { requests, source, root } = await fixture(t);

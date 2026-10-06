@@ -4,7 +4,7 @@ import { PostgresError, positiveTimeout } from './errors.js';
 import type { CliSource } from './binary.js';
 
 export interface PostgresOptions {
-  /** Explicit executable or pinned release; falls back to EMBEDDED_POSTGRES_CLI. */
+  /** Explicit executable/release; otherwise EMBEDDED_POSTGRES_CLI or the package's pinned release. */
   cli?: CliSource;
   postgresVersion?: string;
   database?: string;

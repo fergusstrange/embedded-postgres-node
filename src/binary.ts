@@ -15,8 +15,23 @@ export interface CliRelease {
   /** Directory containing VERSION/ASSET, defaulting to upstream GitHub releases. */
   baseUrl?: string;
 }
+
+/** Reviewed upstream release; every platform asset was checked against checksums.txt. */
+export const DEFAULT_CLI_RELEASE: Readonly<CliRelease> = Object.freeze({
+  version: 'v2.0.0-alpha.1',
+  checksums: Object.freeze({
+    'linux-amd64': '69ef1bd6ca8ec00acf74fe90a5b6204657caa833934aada36591000b90daa7c6',
+    'linux-arm64': '9bb6f2febcf3ce92b678c25aa1e06ae2e0a46a728b6da3ef31709aed2a2493a5',
+    'darwin-amd64': '0f28163e7f346f444d7b3e790205df22e4e92d88acd2de15bd650fa45b114ffb',
+    'darwin-arm64': '97866b33b4a59a5f60a807b55593af162d65f4e4f903696f2c1f638c01de19c0',
+    'windows-amd64': '787e744b5c1c8ae88f77a043d0e3400a220e07e9ce4d03a55b9073a97f4cee6e',
+    'windows-arm64': '07ee6b62c24c0e1a61a3523cf6331560b8a0f64ab780bb5ee6240541a568364d',
+  }),
+});
+
 export type CliSource = { path: string } | {
-  release: CliRelease;
+  /** Omit to use this package's reviewed DEFAULT_CLI_RELEASE. */
+  release?: CliRelease;
   cacheDir?: string;
   offline?: boolean;
   downloadTimeoutMs?: number;
@@ -66,18 +81,17 @@ async function download(url: URL, signal: AbortSignal): Promise<Response> {
   throw new PostgresError('BINARY', 'CLI download has too many redirects');
 }
 
-/** Resolves only explicit local executables or caller-pinned release assets. */
+/** Explicit source, then EMBEDDED_POSTGRES_CLI, then the package's pinned release. */
 export async function resolveCli(source?: CliSource, signal?: AbortSignal): Promise<string> {
   if (signal?.aborted) throw new PostgresError('ABORTED', 'CLI resolution aborted');
-  source ??= process.env.EMBEDDED_POSTGRES_CLI ? { path: process.env.EMBEDDED_POSTGRES_CLI } : undefined;
-  if (!source) throw new PostgresError('CONFIG', 'Set cli.path or EMBEDDED_POSTGRES_CLI; no default v2 CLI release is published or pinned');
+  source ??= process.env.EMBEDDED_POSTGRES_CLI ? { path: process.env.EMBEDDED_POSTGRES_CLI } : {};
   if ('path' in source) {
     if (!source.path || source.path.includes('\0')) throw new PostgresError('CONFIG', 'cli.path must name an executable');
     const path = resolve(source.path);
     try { await access(path, constants.X_OK); } catch { throw new PostgresError('BINARY', 'Local CLI is missing or not executable'); }
     return path;
   }
-  const { release } = source;
+  const release = source.release ?? DEFAULT_CLI_RELEASE;
   if (!/^v2\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$/.test(release.version)) throw new PostgresError('CONFIG', 'CLI release must be an exact v2 tag');
   const target = cliPlatform();
   const expected = release.checksums[target]?.toLowerCase();

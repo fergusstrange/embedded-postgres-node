@@ -6,7 +6,7 @@ This source repository is currently local, with no public Git remote. The npm pa
 
 1. npm ownership is established: `embedded-postgres-node` is owned by `fergusstrange`. Enable account 2FA before approving staged releases or configuring protected publishing. Verify the account with `npm whoami`; do not commit npm credentials.
 2. Create the public source repository only after authorization. Add the actual `repository`, `homepage` and `bugs` metadata to package.json; no nonexistent URL is claimed now. npm provenance must point to the real public repository.
-3. Review the API, MIT license, README status and native prerequisites. Confirm whether the preview remains local-CLI-only or add real reviewed CLI release pins after v2 assets exist. Never fabricate an upstream release version or digest.
+3. Review the API, MIT license, README status and native prerequisites. The default CLI now pins the published `v2.0.0-alpha.1` assets with reviewed checksums. Run `npm run check:release` to verify real downloads, SQL and offline reuse through the installed package. For future pin updates, independently verify all six assets against upstream checksums and update `.github/upstream.json` to the corresponding release commit.
 4. Run the full native CI matrix. Local macOS results are not substitutes for Linux/Windows results.
 5. Configure an `npm` GitHub environment with required reviewers and tag restrictions. Configure npm's trusted publisher for the authorized repository, `release.yml`, and environment `npm`. Keep `NPM_PUBLISH_ENABLED` unset until publication is authorized and these protections are verified. Confirm the installed npm version satisfies the current [trusted publishing requirements](https://docs.npmjs.com/trusted-publishers/).
 

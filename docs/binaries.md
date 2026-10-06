@@ -5,25 +5,30 @@ These are separate acquisitions:
 1. The Node package resolves the embedded-postgres **CLI executable**.
 2. The CLI resolves a native **PostgreSQL distribution** using its own pinned manifest, shared cache and supervisor.
 
-A local CLI path is the current development route. There is no published v2 CLI pin in this package. The checked-in integration build uses Go commit `0483a84e6bc989f4cd6893ab852d56fb9756dbcf`; no runtime code downloads that branch or assumes it has release assets. The Go toolchain is needed only to build development CLI executables.
+`startPostgres()` downloads the reviewed [CLI v2.0.0-alpha.1 release](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0-alpha.1) when needed. Its six SHA-256 pins are embedded in the package and exported as the frozen `DEFAULT_CLI_RELEASE` object. Every asset was downloaded and checked against the published `checksums.txt` before these pins were added. The release tag points to upstream commit `1aa5666cb1b70f044eb74c717e3e0a6ef19cc415`.
 
-## After an upstream v2 release exists
+The selection order is an explicit `cli` option, then `EMBEDDED_POSTGRES_CLI`, then the package's release pin. An explicit download-options object, including `{}`, selects release acquisition even if the environment names a local CLI. It may omit `release` to retain the package default. Downloads happen during resolution/startup, never during npm installation or import. Consumers need no Go toolchain.
 
-Create a reviewed JSON file from that release's `checksums.txt`. The format is:
+## Prefetch and offline use
 
 ```ts
-import { readFile } from 'node:fs/promises';
-import { resolveCli, startPostgres, type CliRelease } from 'embedded-postgres-node';
+import { resolveCli, startPostgres } from 'embedded-postgres-node';
 
-// Authored and checked into YOUR project after reviewing a real published release.
-const release: CliRelease = JSON.parse(await readFile('./verified-cli-release.json', 'utf8'));
-const cli = { release, cacheDir: '/path/to/cli-cache' };
+const cli = { cacheDir: '/path/to/cli-cache' };
 await resolveCli(cli); // Optional prefetch for a subsequent offline test run.
 const database = await startPostgres({ cli: { ...cli, offline: true } });
 try { /* tests */ } finally { await database.stop(); }
 ```
 
-`CliRelease` contains an exact `version` such as the tag of that reviewed release and a `checksums` map from platform to 64-character SHA-256 digest. This document intentionally supplies no fake tag/digest combination. Include every platform your team uses. `baseUrl`, when omitted, is `https://github.com/fergusstrange/embedded-postgres/releases/download/`. A mirror must serve `BASE/VERSION/ASSET` with bytes matching the trusted pin.
+This example prefetches only the CLI; PostgreSQL must also be cached or supplied through `binaries` for a completely offline run (see below).
+
+## Custom releases and mirrors
+
+To select another reviewed v2 release, pass `cli: { release }`. `CliRelease` contains an exact `version` and a `checksums` map from platform to 64-character SHA-256 digest. Copy those hashes from that release's reviewed `checksums.txt` and include every platform your team uses. Runtime resolution never fetches checksums or selects a newer version automatically. Updating this package's default requires a source change and a new npm version.
+
+`baseUrl`, when omitted, is `https://github.com/fergusstrange/embedded-postgres/releases/download/`. A mirror must serve `BASE/VERSION/ASSET` with bytes matching the trusted pin. To mirror the default release, use `cli: { release: { ...DEFAULT_CLI_RELEASE, baseUrl: 'https://your-mirror.example/cli/' } }` after importing `DEFAULT_CLI_RELEASE`.
+
+For development builds, pass `cli: { path: '/absolute/path/to/embedded-postgres' }` or set `EMBEDDED_POSTGRES_CLI`. Local executables are trusted directly. The optional integration source build uses `.github/upstream.json`, pinned to the published release's commit. Only this development route needs Go.
 
 | Node target | Pin key | Upstream asset |
 | --- | --- | --- |

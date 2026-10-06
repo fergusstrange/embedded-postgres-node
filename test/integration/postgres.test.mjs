@@ -11,7 +11,7 @@ import pg from 'pg';
 import { startPostgres, withPostgres } from '../../dist/esm/index.js';
 
 const cli = process.env.EMBEDDED_POSTGRES_CLI;
-if (!cli) throw new Error('Integration tests require EMBEDDED_POSTGRES_CLI; build the Go CLI first.');
+if (!cli) throw new Error('Integration tests require EMBEDDED_POSTGRES_CLI; resolve the published CLI or build it from Go sources first.');
 const base = {
   cli: { path: cli },
   ...(process.env.EP_TEST_BINARIES ? { binaries: process.env.EP_TEST_BINARIES } : {}),

@@ -1,4 +1,6 @@
-# Validation record — 2026-10-05
+# Validation record — 2026-10-05 to 2026-10-06
+
+The dated sections below are historical snapshots. The final section records the current published-CLI validation; earlier release and npm blockers have since changed.
 
 Local implementation and packaging validation is complete on macOS ARM64. The Go sibling checkout stayed clean at `356e19e765e005f058501d25f9ff2b893298f53e`. No changes were made to that checkout, no remote was created for this project, and no package was published.
 
@@ -51,3 +53,26 @@ The proposed Node repository is not yet present under `fergusstrange/embedded-po
 The owner logged into npm as `fergusstrange` and authorized package setup. The installed npm 11.13.0 lacked staging, so npm 11.15.0 was invoked temporarily without changing the global installation. The packed library was rebuilt and passed its package-content, ESM/CommonJS lifecycle and TypeScript consumer checks before a setup-only snapshot was staged.
 
 The registry confirms `embedded-postgres-node` is public and maintained by `fergusstrange`, with only npm's generated `0.0.0-stage` placeholder publicly available. `0.0.0-setup.1` is staged under ID `6e550c38-6fbe-439d-bd5b-501539e2f24b`; the product version `0.1.0-alpha.1` remains unused. No library code was approved for public release. Account 2FA was disabled at setup and still needs owner configuration before release approvals. The public GitHub repository and trusted publishing setup remain outstanding.
+
+## Published CLI default — 2026-10-06
+
+Upstream [v2.0.0-alpha.1](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0-alpha.1) was published at 09:31 UTC from commit `1aa5666cb1b70f044eb74c717e3e0a6ef19cc415`. All six CLI assets were downloaded independently, hashed, and verified against the release's `checksums.txt`. Those exact hashes now form `DEFAULT_CLI_RELEASE`; the source integration pin matches the release commit. Runtime resolution uses this fixed release when no explicit source or environment override is supplied. Both exported release metadata and its checksum map are frozen.
+
+The following checks passed on macOS ARM64 with the published CLI:
+
+| Check | Node 22.23.3 | Node 24.12.0 |
+| --- | --- | --- |
+| Unit/failure tests, including default-release checksum rejection | 90 passed | 90 passed |
+| Real PostgreSQL lifecycle integration tests | 8 passed | 8 passed |
+| Installed tarball ESM/CommonJS lifecycle and TypeScript consumers | Passed | Passed |
+| Fresh CLI and PostgreSQL downloads, real SQL and cleanup (ESM) | Passed | Passed |
+| Offline CLI/PostgreSQL cache reuse, real SQL and cleanup (CommonJS) | Passed | Passed |
+| Line / statement coverage | 98.44% | 98.44% |
+| Function coverage | 100% | 100% |
+| Branch coverage | 96.40% | 96.39% |
+
+All production implementation files still exceed 90% for every coverage metric. The installed consumer starts with empty CLI and PostgreSQL cache directories and selects the package's default release without caller-provided hashes. It checks SQL, the stopped event, a successful child exit, closed ports and removed disposable workspaces. ESM and CommonJS use the installed tarball, not the source tree. No Go build runs on this consumer path.
+
+All node:test, Vitest, Jest, scoped/explicit cleanup and migration examples passed on Node 24 with `EMBEDDED_POSTGRES_CLI`, `EP_TEST_BINARIES` and `EP_TEST_VERSION` unset, exercising automatic default resolution. `actionlint v1.7.12` passed for both workflows. CI now runs `npm run check:release` in all twelve jobs in addition to its source-based integration checks. Remote Linux/Windows and other-architecture results remain pending; verifying their downloaded hashes does not substitute for executing them.
+
+Logs use the `.local/pinned-release-` prefix. No Go source was changed, no GitHub remote was created and no npm library release was published in this step. The remaining work is public source repository creation, the twelve-job native CI run, npm trusted-publisher setup, and the reviewed `0.1.0-alpha.1` publication under `next`.

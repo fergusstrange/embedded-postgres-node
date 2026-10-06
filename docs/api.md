@@ -4,7 +4,7 @@ Import from `embedded-postgres-node` with ESM `import` or CommonJS `require`. Bo
 
 ## Lifecycle
 
-`startPostgres(options?: PostgresOptions): Promise<PostgresInstance>` resolves only after the CLI reports authenticated readiness. Rejection waits for cleanup or the shutdown deadline. A missing CLI configuration is an actionable error; there is no implicit PATH lookup or unpublished release fallback.
+`startPostgres(options?: PostgresOptions): Promise<PostgresInstance>` resolves only after the CLI reports authenticated readiness. Rejection waits for cleanup or the shutdown deadline. With no CLI configuration, it uses `EMBEDDED_POSTGRES_CLI` when set, otherwise downloads the package's checksum-pinned release. There is no implicit PATH lookup or latest-release lookup.
 
 `withPostgres<T>(options, callback): Promise<T>` starts, awaits the callback, and stops in a `finally` block. Both callback and cleanup errors are retained in an `AggregateError`. The callback should await migration/setup work and close its drivers/pools before returning. User hooks are ordinary JavaScript functions, not executable CLI configuration.
 
@@ -24,7 +24,7 @@ An instance exposes:
 
 | Option | Default / behavior |
 | --- | --- |
-| `cli` | `{ path: string }` or pinned release source; otherwise `EMBEDDED_POSTGRES_CLI` |
+| `cli` | Explicit `{ path: string }` or download options `{ release?, cacheDir?, offline?, downloadTimeoutMs? }`; otherwise `EMBEDDED_POSTGRES_CLI`, then `DEFAULT_CLI_RELEASE` |
 | `postgresVersion` | CLI's pinned default PostgreSQL distribution |
 | `database`, `username` | CLI defaults (`postgres`) |
 | `password` | Random 192-bit password, sent through `EP_PASSWORD`, never argv |
@@ -50,7 +50,9 @@ Advanced flags cannot override `json`, `parent-stdin`, `config`, `state-file`, `
 
 ## Executable resolution
 
-`resolveCli(source?: CliSource, signal?: AbortSignal): Promise<string>` lets CI prefetch an explicit, verified CLI release before starting tests. `cliPlatform()` returns one of `linux-amd64`, `linux-arm64`, `darwin-amd64`, `darwin-arm64`, `windows-amd64`, `windows-arm64`. See [binary acquisition](binaries.md).
+`resolveCli(source?: CliSource, signal?: AbortSignal): Promise<string>` resolves a local executable or downloads a checksum-verified release before starting tests. Omitted `source` checks `EMBEDDED_POSTGRES_CLI`, then uses the package pin. An explicit options object takes precedence over the environment; omitting its `release` uses the package pin while allowing cache/offline settings.
+
+`DEFAULT_CLI_RELEASE: Readonly<CliRelease>` exposes the reviewed `v2.0.0-alpha.1` version and all six SHA-256 pins. Both the object and its checksum map are frozen. `cliPlatform()` returns one of `linux-amd64`, `linux-arm64`, `darwin-amd64`, `darwin-arm64`, `windows-amd64`, `windows-arm64`. See [binary acquisition](binaries.md).
 
 ## Errors
 
@@ -58,7 +60,7 @@ Advanced flags cannot override `json`, `parent-stdin`, `config`, `state-file`, `
 
 | Code | Meaning |
 | --- | --- |
-| `CONFIG` | Invalid options or missing explicit CLI selection |
+| `CONFIG` | Invalid options, release tag or checksum configuration |
 | `BINARY` | Local executable or verified download/cache unavailable |
 | `SPAWN` | The OS could not start the CLI |
 | `PROTOCOL` | Malformed/oversized JSON, wrong protocol, invalid event or order |
