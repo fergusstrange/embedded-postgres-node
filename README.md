@@ -2,7 +2,7 @@
 
 Real PostgreSQL for Node.js tests, supervised by the [embedded-postgres v2 CLI](https://github.com/fergusstrange/embedded-postgres/pull/171). TypeScript types, ESM and CommonJS, dynamic ports, explicit async cleanup, and **zero runtime npm dependencies**. Use your own PostgreSQL driver, test runner and migration framework.
 
-**Development preview:** this Node package is not published. No v2 CLI release is currently pinned or assumed available. Use a local CLI built from the sibling Go project. `embedded-postgres-node` is the proposed npm name: the public registry returned 404 on 2026-10-05; this does not reserve the name or establish publishing rights.
+**Development preview:** `embedded-postgres-node` is registered on npm under `fergusstrange`. npm currently serves only its generated `0.0.0-stage` placeholder; the library has not been released. A setup draft remains staged. No v2 CLI release is currently pinned by this package. Use a local CLI built from the sibling Go project until the first reviewed release.
 
 ## Try it locally
 
