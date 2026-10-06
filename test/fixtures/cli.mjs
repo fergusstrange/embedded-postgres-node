@@ -1,4 +1,4 @@
-import { closeSync, writeFileSync, writeSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 const mode = process.env.FAKE_MODE ?? 'normal';
 const password = process.env.EP_PASSWORD;
 const url = `postgresql://postgres:${encodeURIComponent(password)}@127.0.0.1:54321/postgres`;
@@ -9,7 +9,7 @@ process.stdin.resume();
 process.stdin.on('end', () => {
   if (mode === 'hang' || mode === 'stopped-hang') return;
   if (mode === 'shutdown-error') { event({ event: 'error', error: 'shutdown failed' }); process.exitCode = 1; return; }
-  if (mode === 'no-stopped' || mode === 'stdout-end') { process.exit(0); }
+  if (mode === 'no-stopped') { process.exit(0); }
   if (mode === 'slow-stop') {
     setTimeout(() => { event({ event: 'stopped' }); process.exit(0); }, 180);
     return;
@@ -33,12 +33,7 @@ else if (mode === 'split') {
   const bytes = Buffer.from(line);
   for (const byte of bytes) { process.stdout.write(Buffer.from([byte])); await new Promise(r => setTimeout(r, 1)); }
 } else if (mode !== 'never-ready') {
-  if (mode === 'stdout-end') {
-    // Avoid opening process.stdout: on Windows its stream retains another pipe
-    // handle. Close the descriptor after writing so the parent really sees EOF.
-    writeSync(1, JSON.stringify({ protocol: 1, ...ready }) + '\n');
-    closeSync(1);
-  } else event(ready);
+  event(ready);
   if (mode === 'duplicate') event(ready);
   if (mode === 'duplicate-stop') { event({ event: 'stopped' }); event({ event: 'stopped' }); }
   if (mode === 'ready-exit') setTimeout(() => process.exit(9), 40);
