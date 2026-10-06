@@ -32,7 +32,7 @@ An instance exposes:
 | `cacheDir` | CLI PostgreSQL binary cache; separate from the Node CLI executable cache |
 | `binaries` | Optional complete custom distribution path containing `bin/` |
 | `storage` | Omitted or `{ type: 'disposable', workDir? }`; persistent form is `{ type: 'persistent', dataDir, workDir? }` |
-| `runAs` | Optional Unix `{ uid, gid }`; existing nonzero UID, integer IDs below 4294967295 |
+| `runAs` | Optional Unix `{ uid, gid }`; existing nonzero UID, integer IDs below 4294967295; root callers also require nonzero GID |
 | `parameters` | `Record<string, string>` mapped to repeated `--set=name=value` |
 | `startTimeoutMs` | `120000`, CLI startup timeout |
 | `stopTimeoutMs` | `10000`, CLI shutdown grace; maximum `60000` |

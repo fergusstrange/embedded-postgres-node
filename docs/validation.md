@@ -37,3 +37,11 @@ Binary download fixtures verify exact platform mapping, checksum rejection, cach
 - Add actual public repository metadata, establish npm ownership/trusted publishing, configure required environment reviewers and authorize publication before enabling the release workflow. Publication is off by default; pushes never publish.
 
 See [release preparation](releasing.md). Local ignored logs and tarballs are under `.local/`; coverage output is under `coverage/`. Those are generated artifacts and are not committed.
+
+## Merged upstream follow-up — 2026-10-06
+
+PR #171 merged as `0483a84e6bc989f4cd6893ab852d56fb9756dbcf`. The Node integration pin now uses that merge commit. The local Go checkout at `a879e93bbae7ebde9461c0ee950046ea15099e7a` has the identical Git source tree (`1780db9a0c2c9cd6414ba30f7204a1c75298c1f5`), verified against the GitHub API. A CLI rebuilt from those matching local sources passed all eight real PostgreSQL integration tests on Node 24.12.0/macOS ARM64. The Go checkout was not changed. Documentation now reflects the merged requirement that root RunAs callers provide both a nonzero UID and a nonzero GID.
+
+At this check, the merged Go workflow's native tests, supported-version tests, Alpine, static/security checks and coverage all passed. Its [release job](https://github.com/fergusstrange/embedded-postgres/actions/runs/37439342355/job/112191654690) failed while looking up `releases/tags/v2.0.0-alpha.1` (HTTP 404). The corresponding draft release contained no assets. The wrapper therefore still has no safe published default CLI pin; the upstream upload/publication must complete first.
+
+The proposed Node repository is not yet present under `fergusstrange/embedded-postgres-node`, the npm name still returns 404, and the local npm CLI reports `ENEEDAUTH`. Remaining work is to pin published CLI assets/checksums and test the ordinary consumer download path, create the authorized public Node repository and run its full twelve-job CI matrix, configure first-release npm authentication and trusted publishing, then publish the reviewed `0.1.0-alpha.1` tarball with the `next` dist-tag and verify installation from npm.

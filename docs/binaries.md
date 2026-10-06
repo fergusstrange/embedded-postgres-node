@@ -5,7 +5,7 @@ These are separate acquisitions:
 1. The Node package resolves the embedded-postgres **CLI executable**.
 2. The CLI resolves a native **PostgreSQL distribution** using its own pinned manifest, shared cache and supervisor.
 
-A local CLI path is the current development route. There is no published v2 CLI pin in this package. The checked-in integration build uses Go commit `356e19e765e005f058501d25f9ff2b893298f53e`; no runtime code downloads that branch or assumes it has release assets. The Go toolchain is needed only to build development CLI executables.
+A local CLI path is the current development route. There is no published v2 CLI pin in this package. The checked-in integration build uses Go commit `0483a84e6bc989f4cd6893ab852d56fb9756dbcf`; no runtime code downloads that branch or assumes it has release assets. The Go toolchain is needed only to build development CLI executables.
 
 ## After an upstream v2 release exists
 

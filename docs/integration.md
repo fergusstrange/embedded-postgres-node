@@ -30,7 +30,7 @@ For pgvector, PostGIS, AGE or TimescaleDB, supply a compatible custom distributi
 
 ## RunAs and containers
 
-A normal non-root caller uses its own identity. A root caller must supply an existing nonzero Unix UID/GID via `runAs`; an unprivileged caller cannot choose another identity. Caller-owned workspace/socket parents and persistent paths must be accessible to that account. Windows does not support Unix UID/GID selection. Consult the upstream [non-root guide](https://github.com/fergusstrange/embedded-postgres/blob/codex/embedded-postgres-v2/docs/non-root.md) for native runtime libraries and ownership behavior.
+A normal non-root caller uses its own identity. A root caller must explicitly supply both a nonzero Unix UID and nonzero GID via `runAs`; an omitted group is never inferred. A non-root caller may retain its own GID 0; an unprivileged caller cannot choose another identity. Caller-owned workspace/socket parents and persistent paths must be accessible to that account. Windows does not support Unix UID/GID selection. Consult the upstream [non-root guide](https://github.com/fergusstrange/embedded-postgres/blob/codex/embedded-postgres-v2/docs/non-root.md) for native runtime libraries and ownership behavior.
 
 ## Signals and errors
 
