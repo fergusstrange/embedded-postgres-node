@@ -40,7 +40,12 @@ export async function startPostgres(options: PostgresOptions = {}): Promise<Post
   }
 
   return new Promise<PostgresInstance>((resolve, reject) => {
-    const child = spawn(executable, prepared.args, { stdio: ['pipe', 'pipe', 'pipe'], env: prepared.env, windowsHide: true, shell: false });
+    const child = spawn(executable, prepared.args, {
+      stdio: ['pipe', 'pipe', 'pipe'], env: prepared.env, windowsHide: true, shell: false,
+      // Escape Node's Windows kill-on-parent-exit job so the CLI can observe
+      // stdin EOF and clean up. Keep the child referenced and its pipes owned.
+      detached: process.platform === 'win32',
+    });
     let ready = false;
     let stopped = false;
     let stopping = false;
