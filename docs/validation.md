@@ -1,6 +1,6 @@
 # Validation record — 2026-10-05 to 2026-10-06
 
-The dated sections below are historical snapshots. The final section records the current published-CLI validation; earlier release and npm blockers have since changed.
+The dated sections below are historical snapshots. Later sections record subsequent validation and repository setup; earlier release, npm and repository blockers have since changed.
 
 Local implementation and packaging validation is complete on macOS ARM64. The Go sibling checkout stayed clean at `356e19e765e005f058501d25f9ff2b893298f53e`. No changes were made to that checkout, no remote was created for this project, and no package was published.
 
@@ -76,3 +76,7 @@ All production implementation files still exceed 90% for every coverage metric. 
 All node:test, Vitest, Jest, scoped/explicit cleanup and migration examples passed on Node 24 with `EMBEDDED_POSTGRES_CLI`, `EP_TEST_BINARIES` and `EP_TEST_VERSION` unset, exercising automatic default resolution. `actionlint v1.7.12` passed for both workflows. CI now runs `npm run check:release` in all twelve jobs in addition to its source-based integration checks. Remote Linux/Windows and other-architecture results remain pending; verifying their downloaded hashes does not substitute for executing them.
 
 Logs use the `.local/pinned-release-` prefix. No Go source was changed, no GitHub remote was created and no npm library release was published in this step. The remaining work is public source repository creation, the twelve-job native CI run, npm trusted-publisher setup, and the reviewed `0.1.0-alpha.1` publication under `next`.
+
+## Public repository setup — 2026-10-06
+
+The owner authorized the next step: public repository creation and the full CI matrix. [fergusstrange/embedded-postgres-node](https://github.com/fergusstrange/embedded-postgres-node) now exists, and package.json points to its actual source, README and issue URLs. Remote execution results are recorded in the [CI workflow runs](https://github.com/fergusstrange/embedded-postgres-node/actions/workflows/ci.yml), separately from the local evidence above. Publication is still gated; this repository setup does not publish an npm library version.

@@ -1,11 +1,11 @@
 # Release preparation
 
-This source repository is currently local, with no public Git remote. The npm package is registered under `fergusstrange` as of 2026-10-06. npm has published its generated `0.0.0-stage` placeholder; the library code remains unpublished. Releasing the library requires the owner's explicit authorization; the workflows are preparation only.
+The public source repository is [fergusstrange/embedded-postgres-node](https://github.com/fergusstrange/embedded-postgres-node). The npm package is registered under `fergusstrange` as of 2026-10-06. npm has published its generated `0.0.0-stage` placeholder; the library code remains unpublished on npm. Releasing the library requires the owner's explicit authorization; pushes run CI without publishing.
 
 ## Before the first release
 
 1. npm ownership is established: `embedded-postgres-node` is owned by `fergusstrange`. Enable account 2FA before approving staged releases or configuring protected publishing. Verify the account with `npm whoami`; do not commit npm credentials.
-2. Create the public source repository only after authorization. Add the actual `repository`, `homepage` and `bugs` metadata to package.json; no nonexistent URL is claimed now. npm provenance must point to the real public repository.
+2. The owner authorized creation of the public source repository, and package.json now includes its actual `repository`, `homepage` and `bugs` URLs. Keep npm provenance tied to this repository.
 3. Review the API, MIT license, README status and native prerequisites. The default CLI now pins the published `v2.0.0-alpha.1` assets with reviewed checksums. Run `npm run check:release` to verify real downloads, SQL and offline reuse through the installed package. For future pin updates, independently verify all six assets against upstream checksums and update `.github/upstream.json` to the corresponding release commit.
 4. Run the full native CI matrix. Local macOS results are not substitutes for Linux/Windows results.
 5. Configure an `npm` GitHub environment with required reviewers and tag restrictions. Configure npm's trusted publisher for the authorized repository, `release.yml`, and environment `npm`. Keep `NPM_PUBLISH_ENABLED` unset until publication is authorized and these protections are verified. Confirm the installed npm version satisfies the current [trusted publishing requirements](https://docs.npmjs.com/trusted-publishers/).
@@ -38,4 +38,4 @@ The account owner requested npm setup, and registration used `npm stage publish`
 
 The setup draft is a snapshot of the locally verified package with only setup version/publishing metadata changed. It was uploaded locally without provenance and should not be approved as the product release. Keep it pending or reject it later after the owner enables 2FA; ordinary publication of a different version remains possible while a draft is pending. The actual product release should come from the reviewed CI tarball with provenance.
 
-Inspect the draft with `npm exec --yes --package=npm@11.15.0 -- npm stage view 6e550c38-6fbe-439d-bd5b-501539e2f24b`. Configure trusted publishing only after the actual public GitHub repository exists. The initial `npm trust list` readback returned registry HTTP 403; no trusted publisher was configured during setup. Do not approve this setup draft merely to make the package settings accessible; ownership already exists.
+Inspect the draft with `npm exec --yes --package=npm@11.15.0 -- npm stage view 6e550c38-6fbe-439d-bd5b-501539e2f24b`. The public GitHub repository now exists; trusted publishing still needs configuration. The initial `npm trust list` readback returned registry HTTP 403; no trusted publisher was configured during setup. Do not approve this setup draft merely to make the package settings accessible; ownership already exists.

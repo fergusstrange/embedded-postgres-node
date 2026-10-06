@@ -4,6 +4,14 @@
   "description": "Supervised, disposable PostgreSQL for Node.js tests using the embedded-postgres v2 CLI",
   "license": "MIT",
   "author": "Fergus Strange",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fergusstrange/embedded-postgres-node.git"
+  },
+  "homepage": "https://github.com/fergusstrange/embedded-postgres-node#readme",
+  "bugs": {
+    "url": "https://github.com/fergusstrange/embedded-postgres-node/issues"
+  },
   "type": "module",
   "engines": {
     "node": "^22.0.0 || ^24.0.0"
