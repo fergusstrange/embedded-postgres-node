@@ -1,6 +1,6 @@
 {
   "name": "embedded-postgres-node",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "description": "Supervised, disposable PostgreSQL for Node.js tests using the embedded-postgres v2 CLI",
   "license": "MIT",
   "author": "Fergus Strange",

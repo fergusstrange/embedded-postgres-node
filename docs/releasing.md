@@ -1,6 +1,6 @@
 # Release preparation
 
-The public source repository is [fergusstrange/embedded-postgres-node](https://github.com/fergusstrange/embedded-postgres-node), and the npm package is owned by `fergusstrange`. The first library release is `0.1.0-alpha.1` under the `next` dist-tag. Releasing requires the owner's explicit authorization; pushes run CI without publishing. The registration history below records the earlier setup-only placeholder and draft.
+The public source repository is [fergusstrange/embedded-postgres-node](https://github.com/fergusstrange/embedded-postgres-node), and the npm package is owned by `fergusstrange`. The first library release is `0.1.0-alpha.2` under the `next` dist-tag. Releasing requires the owner's explicit authorization; pushes run CI without publishing. The registration history below records the earlier setup-only placeholder and draft. The `v0.1.0-alpha.1` tag remains unchanged after its publish command failed before uploading a package.
 
 ## Before a release
 
@@ -14,13 +14,13 @@ The public source repository is [fergusstrange/embedded-postgres-node](https://g
 
 Update the package version and lockfile together, review the diff, and create an immutable tag `vVERSION`. Run `Review and publish package` with that existing tag and `publish: false`; also select the same tag in GitHub's **Use workflow from** selector (or `gh workflow run --ref TAG`). The dispatch ref and commit must match the selected tag so npm provenance binds to the tested source. The workflow resolves the tag once to a commit, checks it matches package.json, and reruns all twelve CI jobs for that commit. It then packs and smoke-tests the tarball and uploads `reviewed-npm-package`.
 
-Locally, `npm run check:package` produces the same `.local/*.tgz` shape and validates contents, runtime dependency absence, ESM/CommonJS startup and declaration consumers. No install-time download or Go build is permitted in the npm package. Review the exact tarball before enabling publication.
+Locally, `npm run check:package` produces the same `.local/*.tgz` shape and validates contents, runtime dependency absence, ESM/CommonJS startup and declaration consumers. The packaging job also dry-runs publication with the same explicit tarball path, access and dist-tag options as the publish job. No install-time download or Go build is permitted in the npm package. Review the exact tarball before enabling publication.
 
 ## Publishing an approved artifact
 
 After explicit owner authorization, rerun the workflow with `publish: true` and `NPM_PUBLISH_ENABLED=true`. The protected `npm` environment is the final human gate. The publish job consumes the exact tarball from the successful packaging job; it does not rebuild from a moving branch. It uses npm OIDC trusted publishing and provenance, without a stored publishing token.
 
-This initial prerelease has `publishConfig.tag: next`. For a stable release, deliberately review changing it to `latest`; changing only the numeric version does not promote the dist-tag. Confirm package ownership and first-publication setup with the current npm UI/CLI before attempting the first publish; the workflow does not bypass that onboarding.
+This initial prerelease has `publishConfig.tag: next`, and both workflow commands explicitly pass `--tag next` because publishing a tarball must not rely on its embedded publish configuration. For a stable release, deliberately review changing both to `latest`; changing only the numeric version does not promote the dist-tag. Prefix relative tarball paths with `./` so npm cannot interpret them as GitHub shorthand. Confirm package ownership and first-publication setup with the current npm UI/CLI before attempting the first publish; the workflow does not bypass that onboarding.
 
 The workflow validates the presence of real repository metadata and stays disabled unless both the dispatch input and repository variable opt in. These are supplemental controls; GitHub environment protection must be configured by the repository owner. Do not assume naming an environment automatically creates a required-reviewer policy.
 

@@ -2,12 +2,12 @@
 
 Real PostgreSQL for Node.js tests, supervised by the [embedded-postgres v2 CLI](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0-alpha.1). TypeScript types, ESM and CommonJS, dynamic ports, explicit async cleanup, and **zero runtime npm dependencies**. Use your own PostgreSQL driver, test runner and migration framework.
 
-**Alpha:** `0.1.0-alpha.1` pins CLI `v2.0.0-alpha.1` with verified SHA-256 checksums for all six platforms. The API may change before a stable release. Prereleases use npm's `next` tag.
+**Alpha:** `0.1.0-alpha.2` pins CLI `v2.0.0-alpha.1` with verified SHA-256 checksums for all six platforms. The API may change before a stable release. Prereleases use npm's `next` tag.
 
 ## Install
 
 ```sh
-npm install --save-dev --save-exact embedded-postgres-node@0.1.0-alpha.1
+npm install --save-dev --save-exact embedded-postgres-node@0.1.0-alpha.2
 ```
 
 To run the examples from this repository:
