@@ -61,7 +61,7 @@ jobs:
       - run: npm ci
       - run: npm run check:package
       - name: Dry-run publication of the reviewed tarball
-        run: npm publish ./.local/*.tgz --dry-run --provenance --access public --tag next
+        run: npm publish ./.local/*.tgz --dry-run --provenance --access public --tag latest
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: reviewed-npm-package
@@ -87,4 +87,4 @@ jobs:
           name: reviewed-npm-package
           path: package
       - name: Publish the exact verified tarball using npm trusted publishing
-        run: npm publish ./package/*.tgz --provenance --access public --tag next
+        run: npm publish ./package/*.tgz --provenance --access public --tag latest
