@@ -79,8 +79,23 @@ jobs:
           if (sha256 !== process.env.EXPECTED_SHA256) throw new Error('Tarball checksum mismatch');
           console.log(`Verified ${files[0]}: sha256:${sha256}`);
           JS
-      - name: Dry-run publication of the downloaded tarball
-        run: npm publish ./package/*.tgz --dry-run --provenance --access public --tag latest
+      - name: Install the downloaded tarball offline and verify both module formats
+        run: |
+          mkdir consumer
+          node -e 'require("node:fs").writeFileSync("consumer/package.json", JSON.stringify({private: true, type: "module"}))'
+          cd consumer
+          npm install --offline --ignore-scripts --no-audit --no-fund ../package/*.tgz
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createRequire } from 'node:module';
+          import * as esm from 'embedded-postgres-node';
+          const cjs = createRequire(import.meta.url)('embedded-postgres-node');
+          for (const entry of [esm, cjs]) {
+            assert.equal(typeof entry.startPostgres, 'function');
+            assert.equal(typeof entry.withPostgres, 'function');
+            assert.equal(typeof entry.resolveCli, 'function');
+          }
+          JS
   native:
     name: ${{ matrix.os }} / Node ${{ matrix.node }}
     strategy:

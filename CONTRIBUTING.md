@@ -14,7 +14,7 @@ The reviewed development CLI pin lives in `.github/upstream.json` and matches th
 
 GitHub Actions configures twelve native jobs: six OS/architecture combinations times Node 22/24. Current hosted labels are documented by [GitHub](https://docs.github.com/en/actions/reference/runners/github-hosted-runners). Follow this wrapper's [CI runs](https://github.com/fergusstrange/embedded-postgres-node/actions/workflows/ci.yml) for remote results. Do not confuse upstream Go coverage or CI with evidence for this wrapper.
 
-Two additional jobs pack the reviewed npm tarball, upload it, and download it on a fresh runner. They verify its filename and SHA-256 before a publication dry run. The CI artifact uses a separate name so calling CI from the release workflow cannot collide with its publication artifact.
+Two additional jobs pack the reviewed npm tarball, upload it, and download it on a fresh runner. They verify its filename and SHA-256 before an offline installation and ESM/CommonJS import checks. The CI artifact uses a separate name so calling CI from the release workflow cannot collide with its publication artifact.
 
 Do not add process signal handlers at module import. Preserve independent cleanup deadlines after cancellation. Treat protocol URLs, password arguments and abort reasons as credentials. Fault tests should use small local executable/server fixtures, not live arbitrary release URLs. Include meaningful behavior assertions, especially ports and workspaces actually disappearing after a real PostgreSQL lifecycle.
 
