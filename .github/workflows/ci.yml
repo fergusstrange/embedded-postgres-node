@@ -47,9 +47,6 @@ jobs:
         with:
           go-version: ${{ steps.upstream.outputs.goVersion }}
           cache: false
-      - name: Install PostgreSQL runtime libraries
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libssl3 libreadline8 libxml2 libgssapi-krb5-2 zlib1g liblz4-1 libzstd1
       - run: npm ci
       - run: npm run test:coverage
       - name: Test installed package with published CLI and fresh PostgreSQL downloads

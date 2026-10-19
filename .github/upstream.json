@@ -1,6 +1,6 @@
 {
   "repository": "fergusstrange/embedded-postgres",
-  "commit": "1aa5666cb1b70f044eb74c717e3e0a6ef19cc415",
-  "postgresVersion": "18.6.0",
+  "commit": "f3020a0742a4f50e57a29cbcb2a21afb9b9e2b2c",
+  "postgresVersion": "18.6.1",
   "goVersion": "1.26.x"
 }

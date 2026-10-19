@@ -63,6 +63,7 @@ try {
   console.log(`Verified ${tarball.filename}: ${files.length} files, ESM/CommonJS lifecycle and TypeScript consumers, zero runtime dependencies.`);
   if (process.argv.includes('--real')) {
     copyFileSync('test/fixtures/released-consumer.mjs', join(temporary, 'released-consumer.mjs'));
-    execFileSync(process.execPath, ['released-consumer.mjs', resolve('node_modules/pg')], { cwd: temporary, stdio: 'inherit', timeout: 600_000 });
+    const { postgresVersion } = JSON.parse(readFileSync('.github/upstream.json', 'utf8'));
+    execFileSync(process.execPath, ['released-consumer.mjs', resolve('node_modules/pg'), postgresVersion], { cwd: temporary, stdio: 'inherit', timeout: 600_000 });
   }
 } finally { rmSync(temporary, { recursive: true, force: true }); }
