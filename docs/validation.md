@@ -100,3 +100,13 @@ Version `0.1.1` pins the public CLI [`v2.0.0-alpha.4`](https://github.com/fergus
 Local Node 24 validation passed `npm run check`, `npm run check:release`, `npm run test:integration` and `npm run test:examples` using the published CLI and PostgreSQL `18.6.1`. All 90 unit tests passed; production statement coverage was 98.45%, with every file passing the unchanged 90% gates. The installed tarball downloaded the default CLI and PostgreSQL into empty caches, verified SQL/server version, then reused both caches offline through CommonJS and checked cleanup. The native Node 22/24 CI matrix remains required before merging and publishing this patch.
 
 The earlier upstream release regression report, including the two intermittent Windows findings that did not reproduce in focused reruns, is [publicly recorded](https://github.com/theseus-rs/postgresql-binaries/pull/35#issuecomment-6256273450). This patch keeps the Go CLI as an alpha dependency.
+
+## Windows PowerShell follow-up — 2026-10-19
+
+The additional clean-consumer campaign found a Windows restricted-token permissions failure that Git Bash CI did not expose. Go [PR #185](https://github.com/fergusstrange/embedded-postgres/pull/185) fixes the token permissions and passed native x64/ARM64 PowerShell and detached Node-launch regressions, keeping administrator groups disabled.
+
+Version `0.1.2` pins the actual public CLI [`v2.0.0-alpha.5`](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0-alpha.5), source `990b09062d5dca25dcc59a05617b2f542174907e`. All six executable hashes were checked against the public checksum file and asset metadata; all release asset attestations were verified against that source and publishing workflow. The Node release workflow still requires its own full CI matrix, now including PowerShell installed-package tests.
+
+Post-publication verification runs in the public library repositories. `npm run check:published -- VERSION FULL_SOURCE_COMMIT` verifies registry signatures, exact provenance identity, SQL, fresh downloads, offline reuse and cleanup. Native and Alpine workflow artifacts record actual results; a planned or running check is not a pass.
+
+Local Node 24 validation of this pin passed all 90 unit/failure tests, 98.45% statement coverage with every per-file gate satisfied, installed-package fresh-download and offline reuse checks, all eight lifecycle integration tests, and all examples. The Go release itself passed all 16 [public native/musl consumer jobs](https://github.com/fergusstrange/embedded-postgres/actions/runs/39193100872). Node’s public matrix remains a separate required gate.
