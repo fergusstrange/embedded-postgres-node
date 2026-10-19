@@ -42,6 +42,7 @@ async function json(url) {
     return response.json();
   }
 }
+let record;
 try {
   const metadata = await json(`${registry}/embedded-postgres-node/${version}`);
   assert.equal(metadata.version, version);
@@ -70,10 +71,10 @@ try {
   copyFileSync('test/fixtures/released-consumer.mjs', join(work, 'released-consumer.mjs'));
   const { postgresVersion } = JSON.parse(readFileSync('.github/upstream.json', 'utf8'));
   run([process.execPath, 'released-consumer.mjs', join(work, 'node_modules/pg'), postgresVersion], 'consumer');
-  const record = { status: 'passed', version, revision, integrity: metadata.dist.integrity,
+  record = { status: 'passed', version, revision, integrity: metadata.dist.integrity,
     node: process.version, platform: process.platform, arch: process.arch, postgresVersion,
     provenance: statement.predicate.runDetails.metadata.invocationId,
     fixtureSha256: createHash('sha256').update(readFileSync('test/fixtures/released-consumer.mjs')).digest('hex') };
-  writeFileSync(join(evidence, 'result.json'), JSON.stringify(record, null, 2));
-  console.log(`Verified public npm ${version}: signatures, provenance, fresh downloads, SQL, offline reuse and cleanup.`);
 } finally { rmSync(work, { recursive: true, force: true }); }
+writeFileSync(join(evidence, 'result.json'), JSON.stringify(record, null, 2));
+console.log(`Verified public npm ${version}: signatures, provenance, fresh downloads, SQL, offline reuse and cleanup.`);
