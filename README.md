@@ -1,13 +1,13 @@
 # embedded-postgres-node
 
-Real PostgreSQL for Node.js tests, supervised by the [embedded-postgres v2 CLI](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0-alpha.1). TypeScript types, ESM and CommonJS, dynamic ports, explicit async cleanup, and **zero runtime npm dependencies**. Use your own PostgreSQL driver, test runner and migration framework.
+Real PostgreSQL for Node.js tests, supervised by the [embedded-postgres v2 CLI](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0-alpha.4). TypeScript types, ESM and CommonJS, dynamic ports, explicit async cleanup, and **zero runtime npm dependencies**. Use your own PostgreSQL driver, test runner and migration framework.
 
-**Release status:** `0.1.0` is the first regular release, available through npm's `latest` tag. The public API is still in initial development and may change before `1.0.0`. It pins the prerelease CLI `v2.0.0-alpha.1` with verified SHA-256 checksums for all six platforms; the Go CLI remains an alpha dependency.
+**Release status:** `0.1.1` updates the default PostgreSQL binaries and is distributed through npm's `latest` tag. The public API is still in initial development and may change before `1.0.0`. It pins the prerelease CLI `v2.0.0-alpha.4` with verified SHA-256 checksums for all six platforms; the Go CLI remains an alpha dependency.
 
 ## Install
 
 ```sh
-npm install --save-dev --save-exact embedded-postgres-node@0.1.0
+npm install --save-dev --save-exact embedded-postgres-node@0.1.1
 ```
 
 To run the examples from this repository:
@@ -73,7 +73,7 @@ An optional `signal` controls the entire database lifetime. Cancellation request
 ```ts
 const database = await startPostgres({
   cli: { cacheDir: '/path/to/shared-cli-cache' }, // Optional; uses the pinned CLI.
-  postgresVersion: '18.6.0',
+  postgresVersion: '18.6.1',
   database: 'application_test',
   port: 0,
   storage: { type: 'disposable', workDir: '/tmp/test-work' },
@@ -94,13 +94,13 @@ See the [full API](docs/api.md), [binary acquisition](docs/binaries.md), and [in
 
 The wrapper spawns `run --json --parent-stdin`, keeps stdin open until teardown, parses protocol 1 incrementally, and waits for **both `stopped` and process exit**. Shutdown uses its own deadline, even after cancellation. The default outer shutdown deadline is `stopTimeoutMs + 5 seconds`; an override must exceed `stopTimeoutMs + 2 seconds`. If it expires, the wrapper terminates only its retained CLI child and reports that PostgreSQL cleanup cannot be confirmed. It waits up to two further seconds for process/pipe closure.
 
-A Node crash or forced Node termination closes the ownership pipe; the CLI and its independent supervisor perform cleanup. Whole-machine failure, simultaneous termination of the supervisor and PostgreSQL, or an unresponsive supervisor cannot be promised graceful cleanup. See [upstream lifecycle limits](https://github.com/fergusstrange/embedded-postgres/blob/v2.0.0-alpha.1/docs/cli.md). Normal application shutdown should await `stop()`; no import installs process signal handlers. If your application owns signals, install handlers there.
+A Node crash or forced Node termination closes the ownership pipe; the CLI and its independent supervisor perform cleanup. Whole-machine failure, simultaneous termination of the supervisor and PostgreSQL, or an unresponsive supervisor cannot be promised graceful cleanup. See [upstream lifecycle limits](https://github.com/fergusstrange/embedded-postgres/blob/v2.0.0-alpha.4/docs/cli.md). Normal application shutdown should await `stop()`; no import installs process signal handlers. If your application owns signals, install handlers there.
 
 Errors expose a stable `code`, a descriptive `message`, and a bounded `stderr` tail. Known passwords and PostgreSQL URLs are redacted; raw protocol, argv, abort reasons and child error causes are not included. Arbitrary custom programs can emit other secrets, so review diagnostics before sharing them. The instance's normal JSON serialization and inspection omit the connection URL; reading the property still returns the real credential.
 
 ## Support and development
 
-Node 22 and 24 are the supported LTS lines as of 2026-10-05 ([official schedule](https://github.com/nodejs/Release#release-schedule)); Node 20 is EOL, and Node 26 is not yet LTS. CI is configured for both LTS versions on Linux, macOS and Windows, each on x64 and ARM64. Windows ARM64 uses a native CLI and x64 PostgreSQL under emulation. Linux PostgreSQL runtime libraries are still required; Alpine/musl needs a compatible distribution. See [upstream non-root and native requirements](https://github.com/fergusstrange/embedded-postgres/blob/v2.0.0-alpha.1/docs/non-root.md).
+Node 22 and 24 are the supported LTS lines as of 2026-10-05 ([official schedule](https://github.com/nodejs/Release#release-schedule)); Node 20 is EOL, and Node 26 is not yet LTS. CI is configured for both LTS versions on Linux, macOS and Windows, each on x64 and ARM64. Windows ARM64 uses a native CLI and x64 PostgreSQL under emulation. The corrected PostgreSQL bundles include third-party runtime libraries; matching glibc or musl and its loader are still required. See [upstream non-root and native requirements](https://github.com/fergusstrange/embedded-postgres/blob/v2.0.0-alpha.4/docs/non-root.md).
 
 ```sh
 npm run check             # Coverage >=90% and installed-tarball smoke/type checks
