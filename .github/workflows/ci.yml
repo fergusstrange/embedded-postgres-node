@@ -26,7 +26,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
@@ -37,7 +37,7 @@ jobs:
       - id: upstream
         name: Read reviewed upstream pin
         run: node -e 'const p=require("./.github/upstream.json"); const fs=require("node:fs"); for(const [k,v] of Object.entries(p)) fs.appendFileSync(process.env.GITHUB_OUTPUT,`${k}=${v}\n`);'
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ steps.upstream.outputs.repository }}
           ref: ${{ steps.upstream.outputs.commit }}
