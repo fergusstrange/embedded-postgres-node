@@ -61,7 +61,7 @@ test('default release rejects untrusted bytes and supports offline cache selecti
   await assert.rejects(resolveCli({ cacheDir: root, offline: true }), /offline cache/);
   assert.equal(requests.length, 0);
   await assert.rejects(resolveCli({ cacheDir: root }), /checksum mismatch/);
-  assert.deepEqual(requests, [`https://github.com/fergusstrange/embedded-postgres/releases/download/v2.0.0-alpha.5/${cliAsset(target)}`]);
+  assert.deepEqual(requests, [`https://github.com/fergusstrange/embedded-postgres/releases/download/v2.0.0/${cliAsset(target)}`]);
   assert.ok(!(await readdir(root, { recursive: true })).some(x => x.endsWith('.tmp') || x.endsWith(cliAsset(target))));
   // Exported metadata must not allow another importer to change the trusted default.
   assert.throws(() => { DEFAULT_CLI_RELEASE.version = 'v2.99.0'; }, TypeError);

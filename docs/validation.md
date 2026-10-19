@@ -110,3 +110,11 @@ Version `0.1.2` pins the actual public CLI [`v2.0.0-alpha.5`](https://github.com
 Post-publication verification runs in the public library repositories. `npm run check:published -- VERSION FULL_SOURCE_COMMIT` verifies registry signatures, exact provenance identity, SQL, fresh downloads, offline reuse and cleanup. Native and Alpine workflow artifacts record actual results; a planned or running check is not a pass.
 
 Local Node 24 validation of this pin passed all 90 unit/failure tests, 98.45% statement coverage with every per-file gate satisfied, installed-package fresh-download and offline reuse checks, all eight lifecycle integration tests, and all examples. The Go release itself passed all 16 [public native/musl consumer jobs](https://github.com/fergusstrange/embedded-postgres/actions/runs/39193100872). Node’s public matrix remains a separate required gate.
+
+## Stable Go CLI adoption — 2026-10-19
+
+Version `0.1.3` pins the public stable CLI [`v2.0.0`](https://github.com/fergusstrange/embedded-postgres/releases/tag/v2.0.0), source `cc12b18813235038ad46ced51ce64d09d131ff67`. All twelve release assets passed SHA-256 and source/workflow-bound build attestation verification; all six executable hashes are pinned in the package. The development integration pin matches the stable source. PostgreSQL remains pinned to the corrected `18.6.1` distribution.
+
+The Node API remains in initial development before `1.0.0`. The full native Node 22/24 matrix and protected publication gates still apply; actual npm consumers must pass signatures, provenance, fresh downloads, offline reuse, SQL and cleanup after publication.
+
+Local Node 24 validation passed all 90 unit tests, 98.45% production statement coverage with every per-file metric above 90%, the installed-package fresh-download/offline checks, all eight real lifecycle tests and every example against stable `v2.0.0`. The upstream stable release passed all 16 [public Go/CLI consumers](https://github.com/fergusstrange/embedded-postgres/actions/runs/39220272276). The Node public matrix remains a separate required gate.
