@@ -1,6 +1,6 @@
 {
   "name": "embedded-postgres-node",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Supervised, disposable PostgreSQL for Node.js tests using the embedded-postgres v2 CLI",
   "license": "MIT",
   "author": "Fergus Strange",
@@ -62,7 +62,8 @@
     "check:package": "node scripts/check-package.mjs",
     "check:release": "node scripts/check-package.mjs --real",
     "prepack": "npm run build",
-    "check": "npm run test:coverage && npm run check:package"
+    "check": "npm run test:coverage && npm run check:package",
+    "check:published": "node scripts/check-published.mjs"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

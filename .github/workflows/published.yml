@@ -1,0 +1,85 @@
+name: Published npm consumers
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published npm version
+        required: true
+        type: string
+      revision:
+        description: Full source commit from published provenance
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      revision:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-15, windows-2025, windows-11-arm]
+        node: ['22', '24']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - name: Test the actual npm publication outside Git Bash
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
+          PACKAGE_REVISION: ${{ inputs.revision }}
+        shell: python
+        run: |
+          import os, subprocess
+          if os.name == 'nt':
+              command = ['pwsh', '-NoProfile', '-Command', 'npm run check:published -- $env:PACKAGE_VERSION $env:PACKAGE_REVISION; exit $LASTEXITCODE']
+          else:
+              command = ['npm', 'run', 'check:published', '--', os.environ['PACKAGE_VERSION'], os.environ['PACKAGE_REVISION']]
+          subprocess.run(command, check=True)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: published-${{ matrix.os }}-node-${{ matrix.node }}
+          path: published-evidence
+          if-no-files-found: error
+  musl:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+        node: ['22', '24']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Test actual npm publication on native Alpine
+        env:
+          PACKAGE_VERSION: ${{ inputs.version }}
+          PACKAGE_REVISION: ${{ inputs.revision }}
+          NODE_VERSION: ${{ matrix.node }}
+        run: |
+          docker build --build-arg NODE_VERSION="$NODE_VERSION" -f scripts/published.Dockerfile -t npm-consumer .
+          mkdir published-evidence
+          sudo chown 1000:1000 published-evidence
+          docker run --rm -v "$PWD/published-evidence:/evidence" npm-consumer "$PACKAGE_VERSION" "$PACKAGE_REVISION" /evidence/results
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: published-musl-${{ matrix.os }}-node-${{ matrix.node }}
+          path: published-evidence
+          if-no-files-found: error

@@ -4,3 +4,5 @@ coverage/
 .local/
 *.tgz
 .DS_Store
+
+/published-evidence/

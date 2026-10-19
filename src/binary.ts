@@ -18,14 +18,14 @@ export interface CliRelease {
 
 /** Reviewed upstream release; every platform asset was checked against checksums.txt. */
 export const DEFAULT_CLI_RELEASE: Readonly<CliRelease> = Object.freeze({
-  version: 'v2.0.0-alpha.4',
+  version: 'v2.0.0-alpha.5',
   checksums: Object.freeze({
-    'linux-amd64': '753777280371242c333937ad557fe78438c64bf532faac4421598da5e300b300',
-    'linux-arm64': '6d979f9c2f0477c7084045284309344e81a1bd14139d43e435617b3bfc98accc',
-    'darwin-amd64': 'c6feb491357affabc0ea04ac8f5e9861ca15a014403aac5913b1037edc94818f',
-    'darwin-arm64': '66ce0648ff00e409241606041d634e5d1be90aceeccf35391f32d6857c203bff',
-    'windows-amd64': 'e41c8419342832579318ecc0546f5b93ef08b1006f98424938451627d66d6ced',
-    'windows-arm64': 'cd38a6250f2826eac781bb1ccacec315476f3976ccc04527a7ffc500777687a4',
+    'linux-amd64': '12d258324d2151d4bd06b4e5a379aefc40a804e2ca4300b615ad5ef3a7055d15',
+    'linux-arm64': 'b343a74e2c3d01ea384e6f22d00ee78652ddcb071e0dfe441d99395915b9ceed',
+    'darwin-amd64': '2f26a69a34a7da8ab2d481d2d692512f0b4d39b71bc6439d1f9dce07de54a732',
+    'darwin-arm64': '9e2a8936b2ffc64df44e172d191dbb556b310b0d7935bb7d3897b0efbc1341b6',
+    'windows-amd64': '1b4bea4fca6a4cd4e7fd70f71d4e18e1765f8baae229f8eea09cfa2673aab461',
+    'windows-arm64': '9d3d708816e207d486b1e66b3eca95f387700b972f822b5ecfbf918b5069e33e',
   }),
 });
 

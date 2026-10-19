@@ -17,3 +17,17 @@ GitHub Actions configures twelve native jobs: six OS/architecture combinations t
 Do not add process signal handlers at module import. Preserve independent cleanup deadlines after cancellation. Treat protocol URLs, password arguments and abort reasons as credentials. Fault tests should use small local executable/server fixtures, not live arbitrary release URLs. Include meaningful behavior assertions, especially ports and workspaces actually disappearing after a real PostgreSQL lifecycle.
 
 Commit source, tests, documentation and `package-lock.json`; do not commit downloaded executables, database data, coverage output or tarballs. See [releasing](docs/releasing.md) for publication prerequisites and approval gates.
+
+After npm publication, the public `Published npm consumers` workflow verifies the
+actual registry package on all six native platforms and native x64/ARM64 Alpine,
+using Node 22 and 24. It checks npm signatures and provenance against the exact
+source commit, then exercises ESM fresh downloads, CommonJS offline reuse, SQL
+and cleanup. Windows runs from PowerShell as well as the normal Git Bash CI.
+No private validation repository is required. To reproduce on one host:
+
+```bash
+npm run check:published -- VERSION FULL_SOURCE_COMMIT
+```
+
+This needs Node/npm and network access, but no checkout dependencies or Go
+installation. It writes `published-evidence/` and uses disposable fresh caches.

@@ -52,7 +52,7 @@ Advanced flags cannot override `json`, `parent-stdin`, `config`, `state-file`, `
 
 `resolveCli(source?: CliSource, signal?: AbortSignal): Promise<string>` resolves a local executable or downloads a checksum-verified release before starting tests. Omitted `source` checks `EMBEDDED_POSTGRES_CLI`, then uses the package pin. An explicit options object takes precedence over the environment; omitting its `release` uses the package pin while allowing cache/offline settings.
 
-`DEFAULT_CLI_RELEASE: Readonly<CliRelease>` exposes the reviewed `v2.0.0-alpha.4` version and all six SHA-256 pins. Both the object and its checksum map are frozen. `cliPlatform()` returns one of `linux-amd64`, `linux-arm64`, `darwin-amd64`, `darwin-arm64`, `windows-amd64`, `windows-arm64`. See [binary acquisition](binaries.md).
+`DEFAULT_CLI_RELEASE: Readonly<CliRelease>` exposes the reviewed `v2.0.0-alpha.5` version and all six SHA-256 pins. Both the object and its checksum map are frozen. `cliPlatform()` returns one of `linux-amd64`, `linux-arm64`, `darwin-amd64`, `darwin-arm64`, `windows-amd64`, `windows-arm64`. See [binary acquisition](binaries.md).
 
 ## Errors
 
