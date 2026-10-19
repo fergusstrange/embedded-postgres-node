@@ -13,6 +13,74 @@ on:
 permissions:
   contents: read
 jobs:
+  package-artifact:
+    name: Pack and upload reviewed npm artifact
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      filename: ${{ steps.digest.outputs.filename }}
+      sha256: ${{ steps.digest.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run check:package
+      - id: digest
+        name: Record the verified tarball identity
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync, readFileSync, readdirSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          const files = readdirSync('.local').filter(name => name.endsWith('.tgz'));
+          if (files.length !== 1) throw new Error('Expected exactly one reviewed tarball');
+          const sha256 = createHash('sha256').update(readFileSync(`.local/${files[0]}`)).digest('hex');
+          appendFileSync(process.env.GITHUB_OUTPUT, `filename=${files[0]}\nsha256=${sha256}\n`);
+          JS
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-reviewed-npm-package
+          path: .local/*.tgz
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+  verify-artifact:
+    name: Verify downloaded npm artifact
+    needs: package-artifact
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ci-reviewed-npm-package
+          path: package
+      - name: Verify exact tarball bytes after cross-job transfer
+        env:
+          EXPECTED_FILENAME: ${{ needs.package-artifact.outputs.filename }}
+          EXPECTED_SHA256: ${{ needs.package-artifact.outputs.sha256 }}
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, readdirSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          const files = readdirSync('package');
+          if (files.length !== 1 || files[0] !== process.env.EXPECTED_FILENAME) {
+            throw new Error('Artifact download changed the expected tarball name or layout');
+          }
+          const sha256 = createHash('sha256').update(readFileSync(`package/${files[0]}`)).digest('hex');
+          if (sha256 !== process.env.EXPECTED_SHA256) throw new Error('Tarball checksum mismatch');
+          console.log(`Verified ${files[0]}: sha256:${sha256}`);
+          JS
+      - name: Dry-run publication of the downloaded tarball
+        run: npm publish ./package/*.tgz --dry-run --provenance --access public --tag latest
   native:
     name: ${{ matrix.os }} / Node ${{ matrix.node }}
     strategy:
@@ -26,24 +94,24 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
           cache: npm
       - id: upstream
         name: Read reviewed upstream pin
         run: node -e 'const p=require("./.github/upstream.json"); const fs=require("node:fs"); for(const [k,v] of Object.entries(p)) fs.appendFileSync(process.env.GITHUB_OUTPUT,`${k}=${v}\n`);'
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ steps.upstream.outputs.repository }}
           ref: ${{ steps.upstream.outputs.commit }}
           path: .local/upstream
           persist-credentials: false
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ steps.upstream.outputs.goVersion }}
           cache: false
@@ -58,7 +126,7 @@ jobs:
       - run: node scripts/prepare-integration.mjs .local/upstream
       - run: npm run test:integration
       - run: npm run test:examples
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: coverage-${{ matrix.os }}-node-${{ matrix.node }}
